@@ -100,9 +100,7 @@
     "react-autocomplete": "1.7.2",
     "react-copy-to-clipboard": "4.3.1",
     "react-dom": "15.6.2",
-<<<<<<< HEAD
     "react-dropzone": "3.13.4",
-    "react-foundation-components": "git+https://github.com/valzav/react-foundation-components.git#d14362c7c8eee946a4acc3b18d70271d5a82813e",
     "react-highcharts": "8.4.2",
     "react-intl": "2.4.0",
     "react-medium-editor": "1.8.1",
@@ -110,16 +108,6 @@
     "react-overlays": "0.7.2",
     "react-portal": "2.2.1",
     "react-prop-types": "0.3.2",
-=======
-    "react-dropzone": "^3.7.3",
-    "react-highcharts": "^8.3.3",
-    "react-intl": "^2.1.3",
-    "react-medium-editor": "^1.8.0",
-    "react-notification": "^5.0.7",
-    "react-overlays": "^0.7.0",
-    "react-portal": "^2.2.1",
-    "react-prop-types": "^0.3.0",
->>>>>>> remove dependency on react-foundation-components library, refs #2253, #2303
     "react-qr": "0.0.2",
     "react-rangeslider": "1.0.3",
     "react-redux": "5.0.6",

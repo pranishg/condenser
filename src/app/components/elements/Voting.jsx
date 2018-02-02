@@ -36,22 +36,6 @@ const ABOUT_FLAG = (
 
 const MAX_VOTES_DISPLAY = 20;
 const VOTE_WEIGHT_DROPDOWN_THRESHOLD = 1.0 * 1000.0 * 1000.0;
-
-const FLAG_WARNING = (
-    <div>
-        <p>
-            Flagging a post can remove rewards and make this material less
-            visible. Some common reasons to flag
-        </p>
-        <ul>
-            <li>Disagreement on rewards</li>
-            <li>Fraud or Plagiarism</li>
-            <li>Hate Speech or Internet Trolling</li>
-            <li>Intentional miss-categorized content or Spam</li>
-        </ul>
-    </div>
-);
-
 class Voting extends React.Component {
     static propTypes = {
         // HTML properties
@@ -452,14 +436,18 @@ class Voting extends React.Component {
                     onHide={() => this.setState({ showWeight: false })}
                 >
                     <div className="Voting__adjust_weight">
-                        <a
-                            href="#"
-                            onClick={this.voteUp}
-                            className="confirm_weight"
-                            title={tt('g.upvote')}
-                        >
-                            <Icon size="2x" name="chevron-up-circle" />
-                        </a>
+                        {votingUpActive ? (
+                            <Icon size="2x" name={'empty'} />
+                        ) : (
+                            <a
+                                href="#"
+                                onClick={this.voteUp}
+                                className="confirm_weight"
+                                title={tt('g.upvote')}
+                            >
+                                <Icon size="2x" name="chevron-up-circle" />
+                            </a>
+                        )}
                         <div className="weight-display">{weight / 100}%</div>
                         <Slider
                             min={100}
@@ -570,7 +558,7 @@ export default connect(
                     return tt('voting_jsx.removing_your_vote') + t;
                 if (weight > 0)
                     return tt('voting_jsx.changing_to_an_upvote') + t;
-                if (weight < 0) return FLAG_WARNING;
+                if (weight < 0) return ABOUT_FLAG;
                 return null;
             };
             dispatch(

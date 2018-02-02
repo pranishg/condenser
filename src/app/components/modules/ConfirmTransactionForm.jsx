@@ -13,7 +13,7 @@ class ConfirmTransactionForm extends Component {
         warning: PropTypes.string,
         checkbox: PropTypes.string,
         weight: PropTypes.number,
-        updateWeight: PropTypes.func,
+        updateWeightNegative: PropTypes.func,
         // redux-form
         confirm: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
         confirmBroadcastOperation: PropTypes.object,
@@ -23,6 +23,18 @@ class ConfirmTransactionForm extends Component {
     constructor() {
         super();
         this.state = { checkboxChecked: false };
+    }
+
+    componentWillMount() {
+        const { confirmBroadcastOperation } = this.props;
+        // Set voting weight to -10000 if this is a flag action with the slider.
+        const showVoteWeightSlider =
+            confirmBroadcastOperation.getIn([
+                'operation',
+                'showVoteWeightSlider',
+            ]) &&
+            this.typeName(confirmBroadcastOperation) === 'Confirm Flag' &&
+            this.props.updateWeightNegative(10000);
     }
     componentDidMount() {
         document.body.addEventListener('click', this.closeOnOutsideClick);
@@ -39,15 +51,36 @@ class ConfirmTransactionForm extends Component {
         if (confirmErrorCallback) confirmErrorCallback();
         if (onCancel) onCancel();
     };
+    typeName = confirmBroadcastOperation => {
+        const title = confirmBroadcastOperation.getIn([
+            'operation',
+            '__config',
+            'title',
+        ]);
+        if (title) return title;
+        const type = confirmBroadcastOperation.get('type');
+        return (
+            tt('g.confirm') +
+            ' ' +
+            type
+                .split('_')
+                .map(n => n.charAt(0).toUpperCase() + n.substring(1))
+                .join(' ')
+        );
+    };
     okClick = () => {
-        const { okClick, confirmBroadcastOperation, weight } = this.props;
+        const {
+            typeName,
+            props: { okClick, confirmBroadcastOperation, weight },
+        } = this;
+        const type = typeName(confirmBroadcastOperation);
         // User had the opportunity to adjust the voting weight?
         const showVoteWeightSlider = confirmBroadcastOperation.getIn([
             'operation',
             'showVoteWeightSlider',
         ]);
-        // If user was shown the voting slider, take the updated weight from the store.
-        if (showVoteWeightSlider) {
+        // If user was shown the voting slider, and the weight was changed, use the updated weight from the store.
+        if (showVoteWeightSlider && type !== 'Confirm Vote') {
             const updatedBroadcastOperation = confirmBroadcastOperation.setIn(
                 ['operation', 'weight'],
                 weight
@@ -59,42 +92,46 @@ class ConfirmTransactionForm extends Component {
         const checkboxChecked = e.target.checked;
         this.setState({ checkboxChecked });
     };
+
     render() {
-        const { onCancel, okClick, onCheckbox } = this;
+        const { onCancel, okClick, onCheckbox, typeName } = this;
         const {
             confirm,
             confirmBroadcastOperation,
             warning,
             checkbox,
-            updateWeight,
+            updateWeightNegative,
             weight,
         } = this.props;
         const showVoteWeightSlider = confirmBroadcastOperation.getIn([
             'operation',
             'showVoteWeightSlider',
         ]);
+        const type = typeName(confirmBroadcastOperation);
         const { checkboxChecked } = this.state;
         const conf = typeof confirm === 'function' ? confirm() : confirm;
         return (
             <div className="ConfirmTransactionForm">
-                <h4>{typeName(confirmBroadcastOperation)}</h4>
+                <h4>{type}</h4>
                 <hr />
-                {showVoteWeightSlider && (
-                    <div>
-                        <div className="Voting__adjust_weight">
-                            <div className="weight-display">
-                                {weight / 100}%
+                {showVoteWeightSlider &&
+                    type === 'Confirm Flag' && (
+                        <div>
+                            <div className="Voting__adjust_weight">
+                                <div className="weight-display">
+                                    {weight / 100}%
+                                </div>
+                                <Slider
+                                    min={100}
+                                    max={10000}
+                                    step={100}
+                                    // Cast a negative weight value to positive so the slider can handle it...
+                                    value={weight * -1}
+                                    onChange={updateWeightNegative}
+                                />
                             </div>
-                            <Slider
-                                min={100}
-                                max={10000}
-                                step={100}
-                                value={weight}
-                                onChange={updateWeight}
-                            />
                         </div>
-                    </div>
-                )}
+                    )}
                 <div>{conf}</div>
                 {warning ? (
                     <div
@@ -136,23 +173,6 @@ class ConfirmTransactionForm extends Component {
         );
     }
 }
-const typeName = confirmBroadcastOperation => {
-    const title = confirmBroadcastOperation.getIn([
-        'operation',
-        '__config',
-        'title',
-    ]);
-    if (title) return title;
-    const type = confirmBroadcastOperation.get('type');
-    return (
-        tt('g.confirm') +
-        ' ' +
-        type
-            .split('_')
-            .map(n => n.charAt(0).toUpperCase() + n.substring(1))
-            .join(' ')
-    );
-};
 
 export default connect(
     // mapStateToProps
@@ -178,8 +198,10 @@ export default connect(
     },
     // mapDispatchToProps
     dispatch => ({
-        updateWeight: weight => {
-            dispatch(voteActions.updateWeight({ weight }));
+        // Hack to cast the slider values to negative.
+        updateWeightNegative: weight => {
+            const negativeWeight = weight * -1;
+            dispatch(voteActions.updateWeight({ weight: negativeWeight }));
         },
         okClick: confirmBroadcastOperation => {
             dispatch(transactionActions.hideConfirm());
@@ -188,6 +210,7 @@ export default connect(
                     ...confirmBroadcastOperation.toJS(),
                 })
             );
+            dispatch(voteActions.updateWeight({ weight: 10000 }));
         },
     })
 )(ConfirmTransactionForm);
