@@ -182,9 +182,6 @@
     "supertest": "1.2.0",
     "webpack-bundle-analyzer": "2.9.0"
   },
-  "optionalDependencies": {
-    "fsevents": "*"
-  },
   "engines": {
     "node": ">=8.7.0",
     "npm": ">=5.4.2"
