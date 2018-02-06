@@ -83,7 +83,6 @@
     "koa-session": "3.4.0",
     "koa-static-cache": "3.2.0",
     "lodash.debounce": "4.0.8",
-    "medium-editor-insert-plugin": "2.4.1",
     "mem-stat": "1.0.5",
     "minimist": "1.2.0",
     "mixpanel": "0.5.0",
